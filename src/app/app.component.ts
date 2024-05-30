@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
   tipoSedes: any;
   ciudades: any;
   sede: any[] = [];
-  
+
 
   constructor(
     public fb: FormBuilder,
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
     public parqueaderosService: ParqueaderosService,
     public tipoSedeService: TipoSedeService,
     public ciudadesService: CiudadesService
-  ){
+  ) {
     this.sedeForm = this.fb.group({
       parqueadero: ['', Validators.required],
       nombre: ['', Validators.required],
@@ -51,28 +51,28 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
 
     this.paisesService.getAllPaises().subscribe(resp => {
-      this.paises = resp
+      this.paises = resp.datos;
     },
       error => { console.error(error) }
     );
 
     this.parqueaderosService.getAllParqueaderos().subscribe(resp => {
-      this.parqueaderos = resp
+      this.parqueaderos = resp.datos;
     },
       error => { console.error(error) }
     );
 
     this.tipoSedeService.getAllTipoSedes().subscribe(resp => {
-      this.tipoSedes = resp
+      this.tipoSedes = resp.datos;
     },
       error => { console.error(error) }
     );
-    
+
 
     this.sedeForm.get('pais')?.valueChanges.subscribe(value => {
       if (value !== null) {
         this.departamentosService.getAllDepartamentosByPais(value.id).subscribe(resp => {
-          this.departamentos = resp;
+          this.departamentos = resp.datos;
         }, error => {
           console.error(error);
         });
@@ -82,7 +82,7 @@ export class AppComponent implements OnInit {
     this.sedeForm.get('departamento')?.valueChanges.subscribe(value => {
       if (value !== null) {
         this.ciudadesService.getAllCiudadesByDepartamento(value.id).subscribe(resp => {
-          this.ciudades = resp;
+          this.ciudades = resp.datos;
         }, error => {
           console.error(error);
         });
@@ -91,40 +91,45 @@ export class AppComponent implements OnInit {
   }
 
   guardarSede(): void {
-    this.sedeService.saveSede(this.sedeForm.value).subscribe(resp => {
-      this.sedeForm.reset();
-      this.sede.push(resp);
-      console.log(resp);
-    },
+    this.sedeService.saveSede(this.sedeForm.value).subscribe(
+      resp => {
+        alert(resp.mensajes[0]);
+        this.sedeForm.reset();
+        this.sede.push(resp);
+        console.log(resp);
+      },
+      error => {
+        console.error(error);
+        alert(error.error.mensajes[0]);
+      }
+    );
+  }
+
+
+
+  cargarDepartamentosPorPaisesId(event: any) {
+    const paisId: number = parseInt(event.target.value, 10);
+    this.departamentosService.getAllDepartamentosByPais(paisId).subscribe(
+      resp => {
+        this.departamentos = resp.datos;
+      },
       error => {
         console.error(error);
       }
     );
-}
+  }
 
-cargarDepartamentosPorPaisesId(event: any) {
-  const paisId: number = parseInt(event.target.value, 10);
-  this.departamentosService.getAllDepartamentosByPais(paisId).subscribe(
-    resp => {
-      this.departamentos = resp;
-    },
-    error => {
-      console.error(error);
-    }
-  );
-}
-
-cargarCiudadesPorDepartamentoId(event: any) {
-  const departamentoId: number = parseInt(event.target.value, 10);
-  this.ciudadesService.getAllCiudadesByDepartamento(departamentoId).subscribe(
-    resp => {
-      this.ciudades = resp;
-    },
-    error => {
-      console.error(error);
-    }
-  );
-}
+  cargarCiudadesPorDepartamentoId(event: any) {
+    const departamentoId: number = parseInt(event.target.value, 10);
+    this.ciudadesService.getAllCiudadesByDepartamento(departamentoId).subscribe(
+      resp => {
+        this.ciudades = resp.datos;
+      },
+      error => {
+        console.error(error);
+      }
+    );
+  }
 }
 
 
